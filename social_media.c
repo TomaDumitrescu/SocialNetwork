@@ -1,5 +1,7 @@
 /**
- * The entrypoint of the homework. Every initialization must be done here
+ * Copyright 2024 Toma-Ioan Dumitrescu
+ * 
+ * PROGRAM ENTRY POINT
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,15 +17,15 @@
 */
 void init_tasks(void)
 {
-	#ifdef TASK_1
+	#ifdef FRIENDS
 
 	#endif
 
-	#ifdef TASK_2
+	#ifdef POSTS
 
 	#endif
 
-	#ifdef TASK_3
+	#ifdef ALL
 
 	#endif
 }
@@ -37,6 +39,8 @@ int main(void)
 
 	init_tasks();
 
+	list_graph_t *network = lg_create(MAX_USERS);
+
 	char *input = (char *)malloc(MAX_COMMAND_LEN);
 	while (1) {
 		char *command = fgets(input, MAX_COMMAND_LEN, stdin);
@@ -45,16 +49,16 @@ int main(void)
 		if (!command)
 			break;
 
-		#ifdef TASK_1
-		handle_input_friends(input);
+		#ifdef FRIENDS
+		handle_input_friends(input, network);
 		#endif
 
-		#ifdef TASK_2
-		handle_input_posts(input);
+		#ifdef POSTS
+		handle_input_posts(input, network);
 		#endif
 
-		#ifdef TASK_3
-		handle_input_feed(input);
+		#ifdef ALL
+		handle_input_feed(input, network);
 		#endif
 	}
 

@@ -5,7 +5,7 @@
 #include "feed.h"
 #include "users.h"
 
-void handle_input_feed(char *input)
+void handle_input_feed(char *input, list_graph_t *network)
 {
 	char *commands = strdup(input);
 	char *cmd = strtok(commands, "\n ");

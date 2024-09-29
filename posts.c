@@ -5,7 +5,7 @@
 #include "users.h"
 #include "posts.h"
 
-void handle_input_posts(char *input)
+void handle_input_posts(char *input, list_graph_t *network)
 {
 	char *commands = strdup(input);
 	char *cmd = strtok(commands, "\n ");
