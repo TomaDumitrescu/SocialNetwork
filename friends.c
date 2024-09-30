@@ -103,6 +103,9 @@ void suggestions(char *user, list_graph_t *network) {
 
 	qsort(suggestions, num, sizeof(int), compare);
 
+	if (num != 0)
+		printf("Suggestions for %s:\n", user);
+
 	for (int i = 0; i < num; i++) {
 		char *name = get_user_name(suggestions[i]);
 		printf("%s\n", name);
@@ -112,6 +115,107 @@ void suggestions(char *user, list_graph_t *network) {
 		printf("There are no suggestions for %s", user);
 
 	free(suggestions);
+}
+
+void common_friends(char *user1, char *user2, list_graph_t *network)
+{
+	int id1 = get_user_id(user1), id2 = get_user_id(user2);
+
+	int *friends1 = calloc(MAX_USERS, sizeof(int)), num1 = 0;
+	int *friends2 = calloc(MAX_USERS, sizeof(int)), num2 = 0;
+
+	if (!friends1 || !friends2) {
+		printf("Calloc failed!\n");
+		exit(1);
+	}
+
+	ll_node_t *search = network->neighbors[id1]->head;
+	while (search) {
+		int neighbor = *(int *)search->data;
+		friends1[num1++] = neighbor;
+
+		search = search->next;
+	}
+
+	search = network->neighbors[id2]->head;
+	while (search) {
+		int neighbor = *(int *)search->data;
+		friends2[num2++] = neighbor;
+
+		search = search->next;
+	}
+
+	qsort(friends1, num1, sizeof(int), compare);
+	qsort(friends2, num2, sizeof(int), compare);
+
+	bool exist_common = false;
+	int itr1 = 0, itr2 = 0;
+	while (itr1 < num1 && itr2 < num2) {
+		if (friends1[itr1] == friends2[itr2]) {
+			if (!exist_common)
+				printf("The common friends between %s and %s are:\n", user1, user2);
+
+			exist_common = true;
+			printf("%s\n", get_user_name(friends1[itr1]));
+			itr1++, itr2++;
+		} else if (friends1[itr1] < friends2[itr2]) {
+			itr1++;
+		} else {
+			itr2++;
+		}
+	}
+
+	if (!exist_common)
+		printf("No common friends for %s and %s\n", user1, user2);
+
+	free(friends1);
+	free(friends2);
+}
+
+int friends(char *user, list_graph_t *network, bool print, int user_id)
+{
+	int id, num = 0;
+	if (user_id == -1)
+		id = get_user_id(user);
+	else
+		id = user_id;
+
+	ll_node_t *search = network->neighbors[id]->head;
+	while (search) {
+		num++;
+		search = search->next;
+	}
+
+	if (print)
+		printf("%s has %d friends\n", user, num);
+
+	return num;
+}
+
+void popular(char *user, list_graph_t *network)
+{
+	int id = get_user_id(user);
+	int popular_friends = friends(user, network, false, id);
+	int popular_id = id;
+
+	ll_node_t *search = network->neighbors[id]->head;
+	while (search) {
+		int neighbor = *(int *)search->data;
+
+		int n_friends = friends(user, network, false, neighbor);
+		if (n_friends > popular_friends) {
+			popular_id = neighbor;
+			popular_friends = n_friends;
+		}
+
+		search = search->next;
+	}
+
+	char *popular_name = get_user_name(popular_id);
+	if (popular_id == id)
+		printf("%s is the most popular\n", user);
+	else
+		printf("%s is the most popular friend of %s\n", popular_name, user);
 }
 
 void handle_input_friends(char *input, list_graph_t *network)
@@ -131,14 +235,11 @@ void handle_input_friends(char *input, list_graph_t *network)
 	else if (!strcmp(cmd, "distance"))
 		calculate_distance(strtok(cmd, NULL), strtok(cmd, NULL), network);
 	else if (!strcmp(cmd, "common"))
-		(void)cmd;
-		// TODO: Add function
+		common_friends(strtok(cmd, NULL), strtok(cmd, NULL), network);
 	else if (!strcmp(cmd, "friends"))
-		(void)cmd;
-		// TODO: Add function
+		friends(strtok(cmd, NULL), network, true, -1);
 	else if (!strcmp(cmd, "popular"))
-		(void)cmd;
-		// TODO: Add function
+		popular(strtok(cmd, NULL), network);
 
 	free(commands);
 }
