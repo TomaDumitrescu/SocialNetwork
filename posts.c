@@ -2,13 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "users.h"
 #include "posts.h"
 
 void handle_input_posts(char *input, list_graph_t *network)
 {
 	char *commands = strdup(input);
 	char *cmd = strtok(commands, "\n ");
+
+	if (!network)
+		printf("Compiler ignore -- Remove this");
 
 	if (!cmd)
 		return;

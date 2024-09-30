@@ -62,6 +62,7 @@ int main(void)
 		#endif
 	}
 
+	lg_free(network);
 	free_users();
 	free(input);
 

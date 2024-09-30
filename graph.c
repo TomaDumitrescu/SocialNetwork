@@ -1,24 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define MAX_USERS 1000
-
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define MAX_STRING_SIZE	256
-
-typedef struct ll_node_t
-{
-    void* data;
-    struct ll_node_t* next;
-} ll_node_t;
-
-typedef struct linked_list_t
-{
-    ll_node_t* head;
-    unsigned int data_size;
-    unsigned int size;
-} linked_list_t;
+#include "graph.h"
 
 linked_list_t *ll_create(unsigned int data_size)
 {
@@ -183,12 +163,6 @@ void ll_print_string(linked_list_t* list)
     printf("\n");
 }
 
-typedef struct
-{
-	linked_list_t** neighbors;
-	int nodes;
-} list_graph_t;
-
 list_graph_t* lg_create(int nodes)
 {
 	list_graph_t *g = malloc(sizeof(*g));
@@ -206,7 +180,7 @@ void lg_add_edge(list_graph_t* graph, int src, int dest)
 
 int lg_has_edge(list_graph_t* graph, int src, int dest)
 {
-	for (int i = 0; i < graph->neighbors[src]->size; i++) {
+	for (unsigned int i = 0; i < graph->neighbors[src]->size; i++) {
 		ll_node_t *node = get_nth_node(graph->neighbors[src], i);
 		int x = *(int *)node->data;
 		if (x == dest)
@@ -217,7 +191,7 @@ int lg_has_edge(list_graph_t* graph, int src, int dest)
 
 void lg_remove_edge(list_graph_t* graph, int src, int dest)
 {
-	for (int i = 0; i < graph->neighbors[src]->size; i++) {
+	for (unsigned int i = 0; i < graph->neighbors[src]->size; i++) {
 		ll_node_t *node = get_nth_node(graph->neighbors[src], i);
 		int x = *(int *)node->data;
 		if (x == dest) {
@@ -231,8 +205,7 @@ void lg_remove_edge(list_graph_t* graph, int src, int dest)
 void lg_free(list_graph_t* graph)
 {
 	for (int j = 0; j < graph->nodes; j++) {
-		for (int i = 0; i < graph->neighbors[j]->size; i++) {
-			ll_node_t *node = get_nth_node(graph->neighbors[j], i);
+		for (unsigned int i = 0; i < graph->neighbors[j]->size; i++) {
 			ll_node_t *rm = ll_remove_nth_node(graph->neighbors[j], i);
 			free(rm->data);
 			free(rm);
@@ -247,7 +220,7 @@ void lg_print_graph(list_graph_t* graph)
 {
 	for (int j = 0; j < graph->nodes; j++) {
 		printf("%d: ", j);
-		for (int i = 0; i < graph->neighbors[j]->size; i++) {
+		for (unsigned int i = 0; i < graph->neighbors[j]->size; i++) {
 			ll_node_t *node = get_nth_node(graph->neighbors[j], i);
 			int x = *(int *)node->data;
 			printf("%d ", x);
@@ -255,19 +228,6 @@ void lg_print_graph(list_graph_t* graph)
 		printf("\n");
 	}
 }
-
-#include <stdbool.h>
-
-typedef struct queue_t queue_t;
-struct queue_t
-{
-  unsigned int max_size;
-  unsigned int size;
-  unsigned int data_size;
-  unsigned int read_idx;
-  unsigned int write_idx;
-  void** buff;
-};
 
 queue_t*
 q_create(unsigned int data_size, unsigned int max_size)
@@ -358,8 +318,6 @@ q_free(queue_t* q)
 	free(q);
 }
 
-#define INF 100000000
-
 /*
  *   v initialized with 1 and d with INF, except d[dest] = 0
  *   Time complexity: O(num_nodes + num_edges)
@@ -368,7 +326,7 @@ int distance(int src, int dest, list_graph_t* graph, int *v)
 {
 	int d_sol = -1, *d = calloc(MAX_USERS, sizeof(int));
 	if (!d) {
-		print("Calloc failed!");
+		printf("Calloc failed!");
 		exit(1);
 	}
 
@@ -391,7 +349,7 @@ int distance(int src, int dest, list_graph_t* graph, int *v)
 
 			if (!v[neighbor]) {
 				v[neighbor] = 1;
-				q_enqueue(q, (void *)neighbor);
+				q_enqueue(q, (void *)&neighbor);
 			}
 
 			d[neighbor] = MIN(d[neighbor], 1 + d[node]);

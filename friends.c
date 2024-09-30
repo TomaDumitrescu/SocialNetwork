@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "friends.h"
-#include "users.h"
 
 void add_friendship(char *friend1, char *friend2, list_graph_t *network)
 {
@@ -12,7 +11,7 @@ void add_friendship(char *friend1, char *friend2, list_graph_t *network)
 	lg_add_edge(network, id1, id2);
 	lg_add_edge(network, id2, id1);
 
-	printf("Added connection %s - %s\n", friend1, friend2);
+	printf("Added connection %s - %s\n", friend2, friend1);
 }
 
 void remove_friendship(char *friend1, char *friend2, list_graph_t *network)
@@ -22,7 +21,7 @@ void remove_friendship(char *friend1, char *friend2, list_graph_t *network)
 	lg_remove_edge(network, id1, id2);
 	lg_remove_edge(network, id2, id1);
 
-	printf("Removed connection %s - %s\n", friend1, friend2);
+	printf("Removed connection %s - %s\n", friend2, friend1);
 }
 
 void calculate_distance(char *friend1, char *friend2, list_graph_t *network)
@@ -37,9 +36,9 @@ void calculate_distance(char *friend1, char *friend2, list_graph_t *network)
 	// distance with one BFS
 	int d = distance(id1, id2, network, v);
 	if (d > 0)
-		printf("The distance between %s - %s is %d\n", friend1, friend2, d);
+		printf("The distance between %s - %s is %d\n", friend2, friend1, d);
 	else
-		printf("There is no way to get from %s to %s\n", friend1, friend2);
+		printf("There is no way to get from %s to %s\n", friend2, friend1);
 
 	free(v);
 }
@@ -107,6 +106,8 @@ void suggestions(char *user, list_graph_t *network) {
 		printf("Suggestions for %s:\n", user);
 
 	for (int i = 0; i < num; i++) {
+		if (suggestions[i] == id)
+			continue;
 		char *name = get_user_name(suggestions[i]);
 		printf("%s\n", name);
 	}
@@ -153,7 +154,7 @@ void common_friends(char *user1, char *user2, list_graph_t *network)
 	while (itr1 < num1 && itr2 < num2) {
 		if (friends1[itr1] == friends2[itr2]) {
 			if (!exist_common)
-				printf("The common friends between %s and %s are:\n", user1, user2);
+				printf("The common friends between %s and %s are:\n", user2, user1);
 
 			exist_common = true;
 			printf("%s\n", get_user_name(friends1[itr1]));
@@ -166,7 +167,7 @@ void common_friends(char *user1, char *user2, list_graph_t *network)
 	}
 
 	if (!exist_common)
-		printf("No common friends for %s and %s\n", user1, user2);
+		printf("No common friends for %s and %s\n", user2, user1);
 
 	free(friends1);
 	free(friends2);
@@ -227,19 +228,19 @@ void handle_input_friends(char *input, list_graph_t *network)
 		return;
 
 	if (!strcmp(cmd, "add"))
-		add_friendship(strtok(cmd, NULL), strtok(cmd, NULL), network);
+		add_friendship(strtok(NULL, "\n "), strtok(NULL, "\n "), network);
 	else if (!strcmp(cmd, "remove"))
-		remove_friendship(strtok(cmd, NULL), strtok(cmd, NULL), network);
+		remove_friendship(strtok(NULL, "\n "), strtok(NULL, "\n "), network);
 	else if (!strcmp(cmd, "suggestions"))
-		suggestions(strtok(cmd, NULL), network);
+		suggestions(strtok(NULL, "\n "), network);
 	else if (!strcmp(cmd, "distance"))
-		calculate_distance(strtok(cmd, NULL), strtok(cmd, NULL), network);
+		calculate_distance(strtok(NULL, "\n "), strtok(NULL, "\n "), network);
 	else if (!strcmp(cmd, "common"))
-		common_friends(strtok(cmd, NULL), strtok(cmd, NULL), network);
+		common_friends(strtok(NULL, "\n "), strtok(NULL, "\n "), network);
 	else if (!strcmp(cmd, "friends"))
-		friends(strtok(cmd, NULL), network, true, -1);
+		friends(strtok(NULL, "\n "), network, true, -1);
 	else if (!strcmp(cmd, "popular"))
-		popular(strtok(cmd, NULL), network);
+		popular(strtok(NULL, "\n "), network);
 
 	free(commands);
 }

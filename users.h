@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "graph.c"
+#include "graph.h"
 
 /**
  * Initializes the user list

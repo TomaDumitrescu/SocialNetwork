@@ -1,6 +1,8 @@
 #ifndef POSTS_H
 #define POSTS_H
 
+#include "users.h"
+
 /**
  * Function that handles the calling of every command from POSTS
  *
