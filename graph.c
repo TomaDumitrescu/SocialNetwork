@@ -503,22 +503,33 @@ q_free(queue_t* q)
 	free(q);
 }
 
+#define INF 100000000
+
 /*
  *   v initialized with 1 and d with INF, except d[dest] = 0
  *   Time complexity: O(num_nodes + num_edges)
 */
 int distance(int src, int dest, list_graph_t* graph, int *v)
 {
-    queue_t *q = q_create(sizeof(int), MAX_USERS);
-	int d = 0, d_sol = -1;
-	v[src] = 1;
+	int d_sol = -1, *d = calloc(MAX_USERS, sizeof(int));
+	if (!d) {
+		print("Calloc failed!");
+		exit(1);
+	}
 
+	for (int i = 0; i < MAX_USERS; i++)
+		d[i] = INF;
+
+	d[src] = 0;
+
+	queue_t *q = q_create(sizeof(int), MAX_USERS);
+
+	v[src] = 1;
 	q_enqueue(q, (void *)&src);
 	while (!q_is_empty(q)) {
 		int node = *(int *)q_front(q);
 		q_dequeue(q);
 
-		d++;
 		ll_node_t *search = graph->neighbors[node]->head;
 		while (search) {
 			int neighbor = *(int *)search->data;
@@ -528,12 +539,18 @@ int distance(int src, int dest, list_graph_t* graph, int *v)
 				q_enqueue(q, (void *)neighbor);
 			}
 
-			if (d_sol == 0 && neighbor == dest)
-				d_sol = d;
+			d[neighbor] = MIN(d[neighbor], 1 + d[node]);
+
+			search = search->next;
 		}
 	}
 
 	q_free(q);
+
+	if (d[dest] != INF)
+		d_sol = d[dest];
+
+	free(d);
 
 	return d_sol;
 }
