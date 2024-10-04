@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "graph.h"
+#include "tree.h"
 
 /**
  * Initializes the user list
@@ -26,3 +27,8 @@ char *get_user_name(uint16_t id);
  * Frees the user list
 */
 void free_users(void);
+
+/**
+ * Adds a user in the list
+*/
+uint16_t add_user(char *user);

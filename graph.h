@@ -12,15 +12,15 @@
 
 typedef struct ll_node_t
 {
-    void* data;
-    struct ll_node_t* next;
+	void* data;
+	struct ll_node_t* next;
 } ll_node_t;
 
 typedef struct linked_list_t
 {
-    ll_node_t* head;
-    unsigned int data_size;
-    unsigned int size;
+	ll_node_t* head;
+	unsigned int data_size;
+	unsigned int size;
 } linked_list_t;
 
 linked_list_t *ll_create(unsigned int data_size);
@@ -50,12 +50,12 @@ void lg_print_graph(list_graph_t* graph);
 typedef struct queue_t queue_t;
 struct queue_t
 {
-  unsigned int max_size;
-  unsigned int size;
-  unsigned int data_size;
-  unsigned int read_idx;
-  unsigned int write_idx;
-  void** buff;
+unsigned int max_size;
+unsigned int size;
+unsigned int data_size;
+unsigned int read_idx;
+unsigned int write_idx;
+void** buff;
 };
 
 queue_t*

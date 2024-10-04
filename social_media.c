@@ -30,6 +30,41 @@ void init_tasks(void)
 	#endif
 }
 
+void free_post(post_t *root)
+{
+	if (!root || !root->events || !root->events->root)
+		return;
+
+	node_t *events = root->events->root;
+
+	// Recursive search over all subposts of the current post
+	for (int i = 0; i < events->size; i++) {
+		post_t *current = (post_t *)events->children[i]->data;
+		free_post(current);
+
+		free(current);
+		free(events->children[i]);
+	}
+
+	free(events->children);
+	free(events);
+	free(root->events);
+}
+
+void free_data(list_graph_t *network, post_t *post_manager, int psize)
+{
+	// Free the network
+	lg_free(network);
+
+	// Free the post manageer
+	for (int i = 0; i < psize; i++) {
+		free_post(&post_manager[i]);
+		free(post_manager[i].title);
+	}
+
+	free(post_manager);
+}
+
 /**
  * Entrypoint of the program, compiled with different defines for each task
 */
@@ -40,6 +75,14 @@ int main(void)
 	init_tasks();
 
 	list_graph_t *network = lg_create(MAX_USERS);
+
+	post_t *post_manager = calloc(MAX_USERS, sizeof(post_t));
+	if (!post_manager) {
+		printf("Calloc failed!\n");
+		exit(1);
+	}
+
+	int psize = 0, idx = 1;
 
 	char *input = (char *)malloc(MAX_COMMAND_LEN);
 	while (1) {
@@ -54,17 +97,17 @@ int main(void)
 		#endif
 
 		#ifdef POSTS
-		handle_input_posts(input, network);
+		handle_input_posts(input, post_manager, &psize, &idx);
 		#endif
 
 		#ifdef ALL
-		handle_input_feed(input, network);
+		handle_input_feed(input);
 		#endif
 	}
 
-	lg_free(network);
 	free_users();
 	free(input);
+	free_data(network, post_manager, psize);
 
 	return 0;
 }

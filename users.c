@@ -19,7 +19,7 @@ void init_users(void)
 
 	fscanf(users_db, "%hu", &users_number);
 
-	users = malloc(users_number * sizeof(char *));
+	users = malloc(MAX_USERS * sizeof(char *));
 
 	char temp[32];
 	for (uint16_t i = 0; i < users_number; i++) {
@@ -31,6 +31,13 @@ void init_users(void)
 	}
 
 	fclose(users_db);
+}
+
+uint16_t add_user(char *user)
+{
+	users[users_number] = strdup(user);
+
+	return users_number++;
 }
 
 uint16_t get_user_id(char *name)
