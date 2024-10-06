@@ -32,7 +32,12 @@ void init_tasks(void)
 
 void free_post(post_t *root)
 {
-	if (!root || !root->events || !root->events->root)
+	if (!root)
+		return;
+
+	free(root->user_likes);
+
+	if (!root->events || !root->events->root)
 		return;
 
 	node_t *events = root->events->root;

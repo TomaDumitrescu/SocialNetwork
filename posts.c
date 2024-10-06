@@ -12,6 +12,13 @@ void create_post(char *user, char *title, post_t *post_manager,
 	post_manager[*psize].id = (*idx)++;
 	post_manager[*psize].title = strdup(title);
 	post_manager[*psize].user_id = user_id;
+	post_manager[*psize].likes = 0;
+	post_manager[*psize].user_likes = calloc(MAX_USERS / 2, sizeof(int));
+	if (!post_manager[*psize].user_likes) {
+		printf("Calloc failed!\n");
+		exit(1);
+	}
+
 	post_manager[*psize].events = NULL;
 
 	(*psize)++;
@@ -114,6 +121,13 @@ void repost(char *user, int post_id, int repost_id, post_t *post_manager,
 	new_post->title = NULL;
 	new_post->user_id = get_user_id(user);
 	new_post->events = NULL;
+	new_post->user_likes = calloc(MAX_USERS / 2, sizeof(int));
+	if (!new_post->user_likes) {
+		printf("Calloc failed!\n");
+		exit(1);
+	}
+
+	new_post->likes = 0;
 
 	root->children[root->size]->data = (void *)new_post;
 
@@ -204,6 +218,70 @@ void common_repost(int p_id, int r_id1, int r_id2, post_t *post_manager,
 			r_id1, r_id2, first_common->id);
 }
 
+void like(char *user, int p_id, int r_id, post_t *post_manager, int *psize)
+{
+	char post_word[] = "post", repost_word[] = "repost";
+	char *word = (r_id == -1)? post_word : repost_word;
+
+	int id = get_user_id(user);
+
+	post_t *target_post = NULL, *post;
+	for (int i = 0; i < *psize; i++) {
+		if (post_manager[i].id == p_id) {
+			target_post = &post_manager[i];
+			post = &post_manager[i];
+			break;
+		}
+	}
+
+	post_t *target = search_repost(r_id, target_post);
+
+	int cnt = 0, len = target->likes, idx = 0;
+	while (cnt < len) {
+		if (target->user_likes[idx] == id) {
+			target->user_likes[idx] = 0;
+			target->likes--;
+			printf("User %s unliked %s %s\n", user, word, post->title);
+			return;
+		}
+
+		if (target->user_likes[idx] != 0)
+			cnt++;
+		idx++;
+	}
+
+	cnt = 0, idx = 0;
+	while (true) {
+		if (target->user_likes[idx] != 0) {
+			cnt++;
+		} else {
+			target->user_likes[idx] = id;
+			break;
+		}
+		idx++;
+	}
+
+	target->likes++;
+	printf("User %s liked %s %s\n", user, word, post->title);
+}
+
+void get_likes(int p_id, int r_id, post_t *post_manager, int *psize)
+{
+	post_t *target_post = NULL;
+	for (int i = 0; i < *psize; i++) {
+		if (post_manager[i].id == p_id) {
+			target_post = &post_manager[i];
+			break;
+		}
+	}
+
+	post_t *target = search_repost(r_id, target_post);
+	if (r_id == -1)
+		printf("Post %s has %d likes\n", target->title, target->likes);
+	else
+		printf("Repost #%d has %d likes\n", target->id, target->likes);
+}
+
 void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 {
 	char *commands = strdup(input);
@@ -224,19 +302,22 @@ void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 		int p_id = atoi(strtok(NULL, "\n ")), r_id1 = atoi(strtok(NULL, "\n "));
 		int r_id2 = atoi(strtok(NULL, "\n "));
 		common_repost(p_id, r_id1, r_id2, post_manager, &(*psize));
-	} else if (!strcmp(cmd, "like"))
-		(void)cmd;
-		// TODO: Add function
-	else if (!strcmp(cmd, "ratio"))
+	} else if (!strcmp(cmd, "like")) {
+		char *name = strtok(NULL, "\n "), *p_id = strtok(NULL, "\n ");
+		char *r_id = strtok(NULL, "\n ");
+		int r_idnum = (r_id)? atoi(r_id) : -1;
+		like(name, atoi(p_id), r_idnum, post_manager, &(*psize));
+	} else if (!strcmp(cmd, "ratio"))
 		(void)cmd;
 		// TODO: Add function
 	else if (!strcmp(cmd, "delete"))
 		(void)cmd;
 		// TODO: Add function
-	else if (!strcmp(cmd, "get-likes"))
-		(void)cmd;
-		// TODO: Add function
-	else if (!strcmp(cmd, "get-reposts")) {
+	else if (!strcmp(cmd, "get-likes")) {
+		char *p_id = strtok(NULL, "\n "), *r_id = strtok(NULL, "\n ");
+		int r_idnum = (r_id)? atoi(r_id) : -1;
+		get_likes(atoi(p_id), r_idnum, post_manager, &(*psize));
+	} else if (!strcmp(cmd, "get-reposts")) {
 		char *p_id = strtok(NULL, "\n "), *r_id = strtok(NULL, "\n ");
 		int r_idnum = (r_id)? atoi(r_id) : -1;
 		get_reposts(atoi(p_id), r_idnum, post_manager, &(*psize));

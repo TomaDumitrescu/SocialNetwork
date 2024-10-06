@@ -9,6 +9,8 @@ struct post_t {
 	char *title;
 	int user_id;
 	tree_t *events;
+	int likes;
+	int *user_likes;
 };
 
 /**
