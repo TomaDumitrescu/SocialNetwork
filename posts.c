@@ -282,6 +282,45 @@ void get_likes(int p_id, int r_id, post_t *post_manager, int *psize)
 		printf("Repost #%d has %d likes\n", target->id, target->likes);
 }
 
+void compare_reposts(post_t *post, int *likes, int *id)
+{
+	if (!post)
+		return;
+
+	if (post->likes == *likes && post->id < *id)
+		*id = post->id;
+
+	if (post->likes > *likes)
+		*id = post->id;
+
+	if (!post->events || !post->events->root)
+		return;
+
+	node_t *events = post->events->root;
+	for (int i = 0; i < events->size; i++) {
+		post_t *next = (post_t *)events->children[i]->data;
+		compare_reposts(next, &(*likes), &(*id));
+	}
+}
+
+void ratio(int p_id, post_t *post_manager, int *psize)
+{
+	post_t *target = NULL;
+	for (int i = 0; i < *psize; i++)
+		if (post_manager[i].id == p_id) {
+			target = &post_manager[i];
+			break;
+		}
+
+	int ratio_repost = -1, likes = target->likes;
+	compare_reposts(target, &likes, &ratio_repost);
+
+	if (ratio_repost == -1)
+		printf("The original post is the highest rated\n");
+	else
+		printf("Post %d got ratio'd by repost %d\n", p_id, ratio_repost);
+}
+
 void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 {
 	char *commands = strdup(input);
@@ -307,10 +346,9 @@ void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 		char *r_id = strtok(NULL, "\n ");
 		int r_idnum = (r_id)? atoi(r_id) : -1;
 		like(name, atoi(p_id), r_idnum, post_manager, &(*psize));
-	} else if (!strcmp(cmd, "ratio"))
-		(void)cmd;
-		// TODO: Add function
-	else if (!strcmp(cmd, "delete"))
+	} else if (!strcmp(cmd, "ratio")){
+		ratio(atoi(strtok(NULL, "\n ")), post_manager, &(*psize));
+	} else if (!strcmp(cmd, "delete"))
 		(void)cmd;
 		// TODO: Add function
 	else if (!strcmp(cmd, "get-likes")) {
