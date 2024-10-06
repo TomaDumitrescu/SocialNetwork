@@ -22,8 +22,11 @@ void create_post(char *user, char *title, post_t *post_manager,
 // Searches in the posts tree of a post, the repost with repost_id
 post_t *search_repost(int repost_id, post_t *post)
 {
-	if (repost_id == -1 || !post->events || !post->events->root)
+	if (repost_id == -1)
 		return post;
+
+	if (repost_id != -1 && (!post->events || !post->events->root))
+		return NULL;
 
 	node_t *events = post->events->root;
 	for (int i = 0; i < events->size; i++) {
@@ -57,6 +60,7 @@ void repost(char *user, int post_id, int repost_id, post_t *post_manager,
 		}
 
 	post_t *target_repost = search_repost(repost_id, target_post);
+
 	if (!target_repost->events) {
 		target_repost->events = malloc(sizeof(*target_repost->events));
 		if (!target_repost->events) {
@@ -143,11 +147,61 @@ void get_reposts(int post_id, int repost_id, post_t *post_manager,
 			potential = &post_manager[i];
 		}
 
-	char *user = get_user_name(potential->user_id);
-	printf("%s - Post by %s\n", potential->title, user);
+	if (repost_id == -1) {
+		char *user = get_user_name(potential->user_id);
+		printf("%s - Post by %s\n", potential->title, user);
+	}
 
 	post_t *target = search_repost(repost_id, potential);
+	if (target && repost_id != -1)
+		printf("Repost #%d by %s\n", target->id, get_user_name(target->user_id));
 	print_reposts(target);
+}
+
+post_t *find_common(post_t *root, int r_id1, int r_id2)
+{
+	if (!root)
+		return NULL;
+
+	if (root->id == r_id1 || root->id == r_id2)
+		return root;
+
+	if (!root->events || !root->events->root)
+		return NULL;
+
+	post_t *potential = NULL, *result = NULL;
+	node_t *events = root->events->root;
+
+	int num_sides = 0;
+
+	for (int i = 0; i < events->size; i++) {
+		post_t *current = (post_t *)events->children[i]->data;
+		potential = find_common(current, r_id1, r_id2);
+		if (potential) {
+			result = potential;
+			num_sides++;
+		}
+	}
+
+	if (num_sides >= 2)
+		result = root;
+
+	return result;
+}
+
+void common_repost(int p_id, int r_id1, int r_id2, post_t *post_manager,
+				   int *psize)
+{
+	post_t *root_common = NULL;
+	for (int i = 0; i < *psize; i++)
+		if (p_id == post_manager[i].id) {
+			root_common = &post_manager[i];
+		}
+
+	post_t *first_common = find_common(root_common, r_id1, r_id2);
+
+	printf("The first common repost of %d and %d is %d\n",
+			r_id1, r_id2, first_common->id);
 }
 
 void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
@@ -166,10 +220,11 @@ void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 		char *r_id = strtok(NULL, "\n ");
 		int r_idnum = (r_id)? atoi(r_id) : -1;
 		repost(name, atoi(p_id), r_idnum, post_manager, &(*psize), &(*idx));
-	} else if (!strcmp(cmd, "common-repost"))
-		(void)cmd;
-		// TODO: Add function
-	else if (!strcmp(cmd, "like"))
+	} else if (!strcmp(cmd, "common-repost")) {
+		int p_id = atoi(strtok(NULL, "\n ")), r_id1 = atoi(strtok(NULL, "\n "));
+		int r_id2 = atoi(strtok(NULL, "\n "));
+		common_repost(p_id, r_id1, r_id2, post_manager, &(*psize));
+	} else if (!strcmp(cmd, "like"))
 		(void)cmd;
 		// TODO: Add function
 	else if (!strcmp(cmd, "ratio"))
