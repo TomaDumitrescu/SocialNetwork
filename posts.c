@@ -7,7 +7,11 @@
 void create_post(char *user, char *title, post_t *post_manager,
 				 int *psize, int *idx)
 {
-	int user_id = add_user(user);
+	int user_id = get_user_id(user);
+
+	// It is possible to create a user when creating a post
+	if (user_id == -1)
+		user_id = add_user(user);
 
 	post_manager[*psize].id = (*idx)++;
 	post_manager[*psize].title = strdup(title);

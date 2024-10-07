@@ -31,10 +31,10 @@ void init_tasks(void)
 }
 
 #ifndef POSTS
-	void free_post(post_t *post) {
-		if (post)
-			printf("");
-	}
+void free_post(post_t *post) {
+	if (post)
+		printf("");
+}
 #endif
 
 void free_data(list_graph_t *network, post_t *post_manager, int psize)
@@ -91,7 +91,7 @@ int main(void)
 		#endif
 
 		#ifdef ALL
-		handle_input_feed(input);
+		handle_input_feed(input, network, post_manager, psize, idx);
 		#endif
 	}
 
