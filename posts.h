@@ -13,6 +13,8 @@ struct post_t {
 	int *user_likes;
 };
 
+#define FINGERPRINT 6666666
+
 /**
  * Function that handles the calling of every command from POSTS
  *
@@ -21,6 +23,7 @@ struct post_t {
 void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx);
 
 void free_post(post_t *root);
-post_t *search_repost(int repost_id, post_t *post);
+
+void print_reposts(post_t *root, int *task);
 
 #endif // POSTS_H

@@ -141,7 +141,7 @@ void repost(char *user, int post_id, int repost_id, post_t *post_manager,
 	printf("Created repost #%d for %s\n", *idx - 1, user);
 }
 
-void print_reposts(post_t *root)
+void print_reposts(post_t *root, int *task)
 {
 	if (!root || !root->events || !root->events->root)
 		return;
@@ -155,9 +155,16 @@ void print_reposts(post_t *root)
 		if (current->id < 0)
 			continue;
 
+		if (*task != -1 && current->user_id == *task) {
+			*task = FINGERPRINT;
+			return;
+		}
+
 		char *user = get_user_name(current->user_id);
-		printf("Repost #%d by %s\n", current->id, user);
-		print_reposts(current);
+		if (*task == -1)
+			printf("Repost #%d by %s\n", current->id, user);
+
+		print_reposts(current, &(*task));
 	}
 }
 
@@ -178,7 +185,9 @@ void get_reposts(int post_id, int repost_id, post_t *post_manager,
 	post_t *target = search_repost(repost_id, potential);
 	if (target && repost_id != -1)
 		printf("Repost #%d by %s\n", target->id, get_user_name(target->user_id));
-	print_reposts(target);
+
+	int dummy = -1;
+	print_reposts(target, &dummy);
 }
 
 post_t *find_common(post_t *root, int r_id1, int r_id2)

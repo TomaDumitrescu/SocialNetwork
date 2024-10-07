@@ -54,6 +54,29 @@ void feed(char *user, int feed_size, list_graph_t *network,
 	free(ids);
 }
 
+void view_profile(char *user, post_t *post_manager, int psize)
+{
+	int id = get_user_id(user);
+
+	// Firstly, print the user posts in order
+	for (int i = 0; i < psize; i++) {
+		post_t *post = &post_manager[i];
+		if (post->user_id == id)
+			printf("Posted: %s\n", post->title);
+	}
+
+	for (int i = 0; i < psize; i++) {
+		post_t *post = &post_manager[i];
+
+		int info = id;
+		print_reposts(post, &info);
+
+		// A repost by this user was found
+		if (info == FINGERPRINT)
+			printf("Reposted: %s\n", post->title);
+	}
+}
+
 void handle_input_feed(char *input, list_graph_t *network,
 						post_t *post_manager, int psize, int idx)
 {
@@ -66,10 +89,9 @@ void handle_input_feed(char *input, list_graph_t *network,
 	if (!strcmp(cmd, "feed")) {
 		char *name = strtok(NULL, "\n "), *fsize = strtok(NULL, "\n ");
 		feed(name, atoi(fsize), network, post_manager, psize);
-	} else if (!strcmp(cmd, "view-profile"))
-		(void)cmd;
-		// TODO: Add function
-	else if (!strcmp(cmd, "friends-repost"))
+	} else if (!strcmp(cmd, "view-profile")) {
+		view_profile(strtok(NULL, "\n "), post_manager, psize);
+	} else if (!strcmp(cmd, "friends-repost"))
 		(void)cmd;
 		// TODO: Add function
 	else if (!strcmp(cmd, "common-groups"))
