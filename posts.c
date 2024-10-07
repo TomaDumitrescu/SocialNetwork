@@ -146,6 +146,10 @@ void print_reposts(post_t *root)
 	// Recursive search over all subposts of the current post
 	for (int i = 0; i < events->size; i++) {
 		post_t *current = (post_t *)events->children[i]->data;
+
+		if (current->id < 0)
+			continue;
+
 		char *user = get_user_name(current->user_id);
 		printf("Repost #%d by %s\n", current->id, user);
 		print_reposts(current);
@@ -237,7 +241,7 @@ void like(char *user, int p_id, int r_id, post_t *post_manager, int *psize)
 	post_t *target = search_repost(r_id, target_post);
 
 	int cnt = 0, len = target->likes, idx = 0;
-	while (cnt < len) {
+	while (cnt < len && idx < len + 5) {
 		if (target->user_likes[idx] == id) {
 			target->user_likes[idx] = 0;
 			target->likes--;
@@ -321,6 +325,65 @@ void ratio(int p_id, post_t *post_manager, int *psize)
 		printf("Post %d got ratio'd by repost %d\n", p_id, ratio_repost);
 }
 
+void free_post(post_t *root)
+{
+	if (!root || !root->user_likes)
+		return;
+
+	free(root->user_likes);
+	root->user_likes = NULL;
+
+	if (!root->events || !root->events->root)
+		return;
+
+	node_t *events = root->events->root;
+
+	// Recursive search over all subposts of the current post
+	for (int i = 0; i < events->size; i++) {
+		post_t *current = (post_t *)events->children[i]->data;
+
+		free_post(current);
+
+		free(current);
+		free(events->children[i]);
+	}
+
+	free(events->children);
+	free(events);
+	free(root->events);
+}
+
+void delete_post(int p_id, int r_id, post_t *post_manager, int *psize)
+{
+	post_t *target_post = NULL, *target;
+	int idx = 0;
+	for (int i = 0; i < *psize; i++)
+		if (post_manager[i].id == p_id) {
+			idx = i;
+			target_post = &post_manager[i];
+			break;
+		}
+
+	target = search_repost(r_id, target_post);
+
+	if (r_id == -1) {
+		free_post(target);
+		printf("Deleted %s\n", target->title);
+		free(target->title);
+
+		for (int i = idx; i < *psize - 1; i++)
+			post_manager[i] = post_manager[i + 1];
+
+		(*psize)--;
+
+		return;
+	}
+
+	printf("Deleted repost #%d of post %s\n", target->id, target_post->title);
+	target->id = -1;
+	free_post(target);
+}
+
 void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 {
 	char *commands = strdup(input);
@@ -348,10 +411,11 @@ void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 		like(name, atoi(p_id), r_idnum, post_manager, &(*psize));
 	} else if (!strcmp(cmd, "ratio")){
 		ratio(atoi(strtok(NULL, "\n ")), post_manager, &(*psize));
-	} else if (!strcmp(cmd, "delete"))
-		(void)cmd;
-		// TODO: Add function
-	else if (!strcmp(cmd, "get-likes")) {
+	} else if (!strcmp(cmd, "delete")){
+		char *p_id = strtok(NULL, "\n "), *r_id = strtok(NULL, "\n ");
+		int r_idnum = (r_id)? atoi(r_id) : -1;
+		delete_post(atoi(p_id), r_idnum, post_manager, &(*psize));
+	} else if (!strcmp(cmd, "get-likes")) {
 		char *p_id = strtok(NULL, "\n "), *r_id = strtok(NULL, "\n ");
 		int r_idnum = (r_id)? atoi(r_id) : -1;
 		get_likes(atoi(p_id), r_idnum, post_manager, &(*psize));
@@ -359,9 +423,7 @@ void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 		char *p_id = strtok(NULL, "\n "), *r_id = strtok(NULL, "\n ");
 		int r_idnum = (r_id)? atoi(r_id) : -1;
 		get_reposts(atoi(p_id), r_idnum, post_manager, &(*psize));
-	} else if (!strcmp(cmd, "get-likes"))
-		(void)cmd;
-		// TODO: Add function
+	}
 
 	free(commands);
 }

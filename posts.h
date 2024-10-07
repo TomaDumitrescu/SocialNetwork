@@ -20,4 +20,6 @@ struct post_t {
 */
 void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx);
 
+void free_post(post_t *root);
+
 #endif // POSTS_H

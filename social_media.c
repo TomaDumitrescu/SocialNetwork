@@ -30,42 +30,27 @@ void init_tasks(void)
 	#endif
 }
 
-void free_post(post_t *root)
-{
-	if (!root)
-		return;
-
-	free(root->user_likes);
-
-	if (!root->events || !root->events->root)
-		return;
-
-	node_t *events = root->events->root;
-
-	// Recursive search over all subposts of the current post
-	for (int i = 0; i < events->size; i++) {
-		post_t *current = (post_t *)events->children[i]->data;
-		free_post(current);
-
-		free(current);
-		free(events->children[i]);
+#ifndef POSTS
+	void free_post(post_t *post) {
+		if (post)
+			printf("");
 	}
-
-	free(events->children);
-	free(events);
-	free(root->events);
-}
+#endif
 
 void free_data(list_graph_t *network, post_t *post_manager, int psize)
 {
 	// Free the network
 	lg_free(network);
 
+	#ifdef POSTS
+
 	// Free the post manageer
 	for (int i = 0; i < psize; i++) {
 		free_post(&post_manager[i]);
 		free(post_manager[i].title);
 	}
+
+	#endif
 
 	free(post_manager);
 }
