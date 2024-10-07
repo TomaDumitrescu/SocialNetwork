@@ -111,6 +111,7 @@ void repost(char *user, int post_id, int repost_id, post_t *post_manager,
 	root->children[root->size]->num_reallocs = 0;
 	root->children[root->size]->children = NULL;
 
+	// Adding the new post
 	post_t *new_post = malloc(sizeof(*new_post));
 	if (!new_post) {
 		printf("Malloc failed!\n");
@@ -181,6 +182,7 @@ post_t *find_common(post_t *root, int r_id1, int r_id2)
 	if (!root)
 		return NULL;
 
+	// common root or invalid case (impossible!!!)
 	if (root->id == r_id1 || root->id == r_id2)
 		return root;
 
@@ -190,6 +192,12 @@ post_t *find_common(post_t *root, int r_id1, int r_id2)
 	post_t *potential = NULL, *result = NULL;
 	node_t *events = root->events->root;
 
+	/*
+		The number of branches where the r_id1 and r_id2
+	are located. If they are on the same branch, then we
+	can go down. Otherwise, this is the common root or
+	invalid case
+	*/
 	int num_sides = 0;
 
 	for (int i = 0; i < events->size; i++) {
@@ -242,7 +250,9 @@ void like(char *user, int p_id, int r_id, post_t *post_manager, int *psize)
 
 	int cnt = 0, len = target->likes, idx = 0;
 	while (cnt < len && idx < len + 5) {
+		// unlike
 		if (target->user_likes[idx] == id) {
+			// will be filled by the next like by some other user
 			target->user_likes[idx] = 0;
 			target->likes--;
 			printf("User %s unliked %s %s\n", user, word, post->title);
@@ -331,6 +341,8 @@ void free_post(post_t *root)
 		return;
 
 	free(root->user_likes);
+
+	// necessary to avoid double free when freeing post_manager
 	root->user_likes = NULL;
 
 	if (!root->events || !root->events->root)
@@ -392,6 +404,7 @@ void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 	if (!cmd)
 		return;
 
+	// Commands menu for posts
 	if (!strcmp(cmd, "create")) {
 		char *name = strtok(NULL, "\n "), *title = strtok(NULL, "\n");
 		create_post(name, title, post_manager, &(*psize), &(*idx));

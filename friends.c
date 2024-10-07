@@ -227,6 +227,7 @@ void handle_input_friends(char *input, list_graph_t *network)
 	if (!cmd)
 		return;
 
+	// Commands menu for user network
 	if (!strcmp(cmd, "add"))
 		add_friendship(strtok(NULL, "\n "), strtok(NULL, "\n "), network);
 	else if (!strcmp(cmd, "remove"))
