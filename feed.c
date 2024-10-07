@@ -77,6 +77,45 @@ void view_profile(char *user, post_t *post_manager, int psize)
 	}
 }
 
+void friends_repost(char *user, int p_id, list_graph_t *network,
+					post_t *post_manager, int psize)
+{
+	int id = get_user_id(user), cnt = 0;
+
+	int *ids = calloc(MAX_USERS / 2, sizeof(int));
+	if (!ids) {
+		printf("Calloc failed!\n");
+		exit(1);
+	}
+
+	// Determining the friends of the current user
+	ll_node_t *search = network->neighbors[id]->head;
+	while (search) {
+		int neighbor = *(int *)search->data;
+		ids[cnt++] = neighbor;
+		search = search->next;
+	}
+
+	for (int i = 0; i < psize; i++) {
+		post_t *post = &post_manager[i];
+		if (post->id != p_id)
+			continue;
+
+		for (int j = 0; j < cnt; j++) {
+			int info = ids[j];
+			print_reposts(post, &info);
+
+			// A repost by this user was found
+			if (info == FINGERPRINT)
+				printf("%s\n", get_user_name(ids[j]));
+		}
+
+		break;
+	}
+
+	free(ids);
+}
+
 void handle_input_feed(char *input, list_graph_t *network,
 						post_t *post_manager, int psize, int idx)
 {
@@ -91,10 +130,10 @@ void handle_input_feed(char *input, list_graph_t *network,
 		feed(name, atoi(fsize), network, post_manager, psize);
 	} else if (!strcmp(cmd, "view-profile")) {
 		view_profile(strtok(NULL, "\n "), post_manager, psize);
-	} else if (!strcmp(cmd, "friends-repost"))
-		(void)cmd;
-		// TODO: Add function
-	else if (!strcmp(cmd, "common-groups"))
+	} else if (!strcmp(cmd, "friends-repost")) {
+		char *name = strtok(NULL, "\n "), *p_id = strtok(NULL, "\n ");
+		friends_repost(name, atoi(p_id), network, post_manager, psize);
+	} else if (!strcmp(cmd, "common-groups"))
 		(void)cmd;
 		// TODO: Add function
 
