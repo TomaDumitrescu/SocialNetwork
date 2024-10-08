@@ -102,7 +102,7 @@ void suggestions(char *user, list_graph_t *network) {
 
 	qsort(suggestions, num, sizeof(int), compare);
 
-	if (num != 0)
+	if (num > 1)
 		printf("Suggestions for %s:\n", user);
 
 	for (int i = 0; i < num; i++) {
@@ -112,8 +112,8 @@ void suggestions(char *user, list_graph_t *network) {
 		printf("%s\n", name);
 	}
 
-	if (num == 0)
-		printf("There are no suggestions for %s", user);
+	if (num <= 1)
+		printf("There are no suggestions for %s\n", user);
 
 	free(suggestions);
 }

@@ -10,6 +10,6 @@
  * Please add any necessary parameters to the functions
 */
 void handle_input_feed(char *input, list_graph_t *network,
-                        post_t *post_manager, int psize, int idx);
+                        post_t *post_manager, int psize);
 
 #endif // FEED_H

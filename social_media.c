@@ -91,7 +91,7 @@ int main(void)
 		#endif
 
 		#ifdef ALL
-		handle_input_feed(input, network, post_manager, psize, idx);
+		handle_input_feed(input, network, post_manager, psize);
 		#endif
 	}
 

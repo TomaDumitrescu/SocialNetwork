@@ -318,7 +318,7 @@ void compare_reposts(post_t *post, int *likes, int *id)
 		*id = post->id;
 
 	if (post->likes > *likes)
-		*id = post->id;
+		*id = post->id, *likes = post->likes;
 
 	if (!post->events || !post->events->root)
 		return;
