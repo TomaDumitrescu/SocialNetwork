@@ -17,9 +17,7 @@ struct post_t {
 
 /**
  * Function that handles the calling of every command from POSTS
- *
- * Please add any necessary parameters to the functions
-*/
+ */
 void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx);
 
 void free_post(post_t *root);
