@@ -8,9 +8,7 @@
 
 /**
  * Function that handles the calling of every command from FRIENDS
- *
- * Please add any necessary parameters to the functions
-*/
+ */
 void handle_input_friends(char *input, list_graph_t *network);
 
 #endif // FRIENDS_H
