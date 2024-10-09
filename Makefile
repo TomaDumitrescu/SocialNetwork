@@ -7,8 +7,6 @@ all: build
 
 build: friends posts feed
 
-# Any other object file that is needed for the other files
-# add it here, separated by space
 UTILS = users.o graph.o
 
 friends: $(UTILS) friends.o social_media_friends.o
