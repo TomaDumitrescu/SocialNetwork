@@ -409,6 +409,21 @@ void delete_post(int p_id, int r_id, post_t *post_manager, int *psize)
 	free_post(target);
 }
 
+void most_liked_post(post_t *post_manager, int *psize)
+{
+	int max_likes = -1;
+	post_t *sol = NULL;
+	for (int i = 0; i < *psize; i++) {
+		post_t *post = &post_manager[i];
+		if (post->likes > max_likes) {
+			max_likes = post->likes;
+			sol = post;
+		}
+	}
+
+	printf("The most liked post is %s\n", sol->title);
+}
+
 void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 {
 	char *commands = strdup(input);
@@ -449,6 +464,8 @@ void handle_input_posts(char *input, post_t *post_manager, int *psize, int *idx)
 		char *p_id = strtok(NULL, "\n "), *r_id = strtok(NULL, "\n ");
 		int r_idnum = (r_id)? atoi(r_id) : -1;
 		get_reposts(atoi(p_id), r_idnum, post_manager, &(*psize));
+	} else if (!strcmp(cmd, "get-most-liked-post")) {
+		most_liked_post(post_manager, &(*psize));
 	}
 
 	free(commands);
